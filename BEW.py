@@ -7,6 +7,8 @@ MAXFPS = 100
 SCREEN_SIZE = 800, 600
 UNIT_LENGTH = 101  # must be odd number
 
+map_img = pygame.image.load("map.png")
+
 unit_img = pygame.image.load("unit (1).png")
 unit_img = pygame.transform.scale(unit_img, (UNIT_LENGTH, UNIT_LENGTH))
 
@@ -15,14 +17,13 @@ class WS(object):
     def __init__(self):
         pygame.init()
         pygame.key.set_repeat(10, 25)
-        pygame.event.set_blocked(pygame.MOUSEMOTION)
+        # pygame.event.set_blocked(pygame.MOUSEMOTION)
         self.screen = pygame.display.set_mode(SCREEN_SIZE)
         self.units = LinkedList.LL()
         tmp = Unit()
-        tmp.p = (100, 100)
+        tmp.p = (800, 600)
         tmp.img = unit_img
         self.units.insert(tmp)
-        self.user = self.units.head.next.val
 
     def run(self):
         fps_clk = pygame.time.Clock()
@@ -34,11 +35,17 @@ class WS(object):
         while True:
             # set maximum fps
             fps_clk.tick(MAXFPS)
+
+            # local variables
             user = self.units.head.next.val
+            now_map = map_img.copy()
+
+            # draw map
+            draw_screen([self.units], now_map)
 
             # draw screen
             self.screen.fill((255, 255, 255))
-            draw_screen([self.units], self.screen)
+            self.screen.blit(now_map, (-user.p[0]+400, -user.p[1]+300))
             pygame.display.update()
 
             # handle events
@@ -47,7 +54,7 @@ class WS(object):
                 if event.type == pygame.QUIT:
                     sys.exit()
                 # when press the keyboard
-                if event.type == pygame.KEYDOWN:
+                elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         sys.exit()
                     if event.key == pygame.K_w:
@@ -71,26 +78,27 @@ class WS(object):
                     if event.key == pygame.K_s:
                         down_act = False
 
-                if up_act:
-                    user.move((0, -2))
-                if down_act:
-                    user.move((0, 2))
-                if left_act:
-                    user.move((-2, 0))
-                if right_act:
-                    user.move((2, 0))
+            # move "wasd"
+            if up_act:
+                user.move((0, -2))
+            if down_act:
+                user.move((0, 2))
+            if left_act:
+                user.move((-2, 0))
+            if right_act:
+                user.move((2, 0))
 
             # make user unit look toward mouse position
-            xy = np.subtract(np.array(pygame.mouse.get_pos()), np.array(self.user.p))
+            xy = np.subtract(np.array(pygame.mouse.get_pos()), np.array((400, 300)))
             if xy[0] == 0:
                 if xy[1] / abs(xy[1]) == 1:
-                    self.user.direct = 90
+                    user.direct = 90
                 else:
-                    self.user.direct = -90
+                    user.direct = -90
             else:
-                self.user.direct = 0 - np.rad2deg(np.arctan(xy[1] / xy[0]))
+                user.direct = 0 - np.rad2deg(np.arctan(xy[1] / xy[0]))
                 if xy[0] < 0:
-                    self.user.direct += 180
+                    user.direct += 180
 
 
 class Unit(object):
