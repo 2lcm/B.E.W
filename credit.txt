@@ -1,6 +1,4 @@
 ﻿orderd as
-"unit1.png"
-"unit1.png"
-"unit1.png"
+"unit.png"
 
-Icons made by from www.flaticon.com is licensed by CC 3.0 BY
+Icons made by Dave Gand from www.flaticon.com is licensed by CC 3.0 BY

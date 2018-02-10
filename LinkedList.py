@@ -29,7 +29,7 @@ class LL(object):
             cur = cur.next
 
     def delete(self, target):
-        if type(target) != Node():
+        if type(target) != Node:
             target = self.find(target)
         prev = target.prev
         next = target.next
