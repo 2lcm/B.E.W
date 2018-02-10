@@ -35,8 +35,8 @@
             <file leaf-file-name="BEW.py" pinned="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/BEW.py">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="336">
-                    <caret line="120" column="34" lean-forward="true" selection-start-line="120" selection-start-column="34" selection-end-line="120" selection-end-column="34" />
+                  <state relative-caret-position="564">
+                    <caret line="126" column="16" lean-forward="true" selection-start-line="126" selection-start-column="16" selection-end-line="126" selection-end-column="16" />
                     <folding>
                       <element signature="e#0#13#0" expanded="true" />
                     </folding>
@@ -112,7 +112,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>SCREEN_SIZE</find>
       <find>.fill</find>
       <find>update</find>
       <find>ghost</find>
@@ -139,7 +138,6 @@
       <find>new_img</find>
       <find>Unit</find>
       <find>tmp</find>
-      <find>mouse</find>
       <find>user</find>
       <find>gunfire</find>
       <find>self</find>
@@ -147,7 +145,12 @@
       <find>dele</find>
       <find>out_of_map</find>
       <find>direct</find>
+<<<<<<< HEAD
+      <find>make</find>
+      <find>mouse</find>
+=======
 >>>>>>> 2faf298f587c428ce641f9582ce33ea4cf8e940b
+>>>>>>> 8ecfe7208e00eed033f6ed490f730eac4f39f41a
     </findStrings>
     <replaceStrings>
       <replace>input</replace>
@@ -284,7 +287,7 @@
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13392857" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3294893" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3294893" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32454696" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
 >>>>>>> 2faf298f587c428ce641f9582ce33ea4cf8e940b
@@ -475,16 +478,20 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/WS.py" />
-    <entry file="file://$PROJECT_DIR$/../TD/TD.py">
+    <entry file="file://$PROJECT_DIR$/LinkedList.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
-          <caret line="402" column="35" lean-forward="false" selection-start-line="402" selection-start-column="30" selection-end-line="402" selection-end-column="35" />
+        <state relative-caret-position="89">
+          <caret line="16" column="22" lean-forward="true" selection-start-line="16" selection-start-column="22" selection-end-line="16" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/LinkedList.py">
+    <entry file="file://$PROJECT_DIR$/../TD/TD.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
+        <state relative-caret-position="190">
+          <caret line="402" column="35" lean-forward="false" selection-start-line="402" selection-start-column="30" selection-end-line="402" selection-end-column="35" />
+=======
 <<<<<<< HEAD
         <state relative-caret-position="1219">
           <caret line="53" column="18" lean-forward="false" selection-start-line="53" selection-start-column="18" selection-end-line="53" selection-end-column="18" />
@@ -500,6 +507,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2944">
           <caret line="135" column="0" lean-forward="false" selection-start-line="135" selection-start-column="0" selection-end-line="135" selection-end-column="0" />
+>>>>>>> 8ecfe7208e00eed033f6ed490f730eac4f39f41a
           <folding />
         </state>
       </provider>
@@ -507,12 +515,17 @@
     <entry file="file://$PROJECT_DIR$/BEW.py">
       <provider selected="true" editor-type-id="text-editor">
 <<<<<<< HEAD
+        <state relative-caret-position="564">
+          <caret line="126" column="16" lean-forward="true" selection-start-line="126" selection-start-column="16" selection-end-line="126" selection-end-column="16" />
+=======
+<<<<<<< HEAD
         <state relative-caret-position="230">
           <caret line="58" column="34" lean-forward="true" selection-start-line="58" selection-start-column="34" selection-end-line="58" selection-end-column="34" />
 =======
         <state relative-caret-position="336">
           <caret line="120" column="34" lean-forward="true" selection-start-line="120" selection-start-column="34" selection-end-line="120" selection-end-column="34" />
 >>>>>>> 2faf298f587c428ce641f9582ce33ea4cf8e940b
+>>>>>>> 8ecfe7208e00eed033f6ed490f730eac4f39f41a
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
