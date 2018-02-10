@@ -6,20 +6,24 @@ import numpy as np
 MAXFPS = 100
 SCREEN_SIZE = 800, 600
 UNIT_LENGTH = 101  # must be odd number
+BULLET_LENGTH = 30
 
 map_img = pygame.image.load("map.png")
 
 unit_img = pygame.image.load("unit (1).png")
 unit_img = pygame.transform.scale(unit_img, (UNIT_LENGTH, UNIT_LENGTH))
+temp_bullet_img = pygame.image.load("bullet.png")
+temp_bullet_img = pygame.transform.scale(temp_bullet_img, (BULLET_LENGTH, BULLET_LENGTH))
 
 
-class WS(object):
+class BEW(object):
     def __init__(self):
         pygame.init()
         pygame.key.set_repeat(10, 25)
         # pygame.event.set_blocked(pygame.MOUSEMOTION)
         self.screen = pygame.display.set_mode(SCREEN_SIZE)
         self.units = LinkedList.LL()
+        self.gunfire = LinkedList.LL()
         tmp = Unit()
         tmp.p = (800, 600)
         tmp.img = unit_img
@@ -41,16 +45,25 @@ class WS(object):
             now_map = map_img.copy()
 
             # draw map
-            draw_screen([self.units], now_map)
+            draw_screen([self.units, self.gunfire], now_map)
 
             # draw screen
             self.screen.fill((255, 255, 255))
+
             self.screen.blit(now_map, (-user.p[0]+400, -user.p[1]+300))
             pygame.display.update()
+
+            temp_fire = self.gunfire.head.next
+            # while temp_fire != self.gunfire.tail:
+            #     if self.out_of_map(temp_fire.val):
+            #         temp_fire.val.move()
+            #     else:
+            #         self.gunfire.delete(temp_fire)
 
             # handle events
             for event in pygame.event.get():
                 # when click x button on window
+
                 if event.type == pygame.QUIT:
                     sys.exit()
                 # when press the keyboard
@@ -88,6 +101,13 @@ class WS(object):
             if right_act:
                 user.move((2, 0))
 
+            if pygame.mouse.get_pressed()[0]:
+                new_shot = M_gun()
+                print('make')
+                new_shot.p = user.p
+                new_shot.direct = user.direct
+                self.gunfire.insert(new_shot)
+
             # make user unit look toward mouse position
             xy = np.subtract(np.array(pygame.mouse.get_pos()), np.array((400, 300)))
             if xy[0] == 0:
@@ -99,6 +119,22 @@ class WS(object):
                 user.direct = 0 - np.rad2deg(np.arctan(xy[1] / xy[0]))
                 if xy[0] < 0:
                     user.direct += 180
+
+    def out_of_map(self, bullet):
+        if 800 > bullet.p[0] > 0 and 600 > bullet.p[1] > 0:
+            return True
+        else:
+            return False
+
+
+class M_gun(object):
+    def __init__(self):
+        self.p = [0, 0]
+        self.img = temp_bullet_img
+        self.direct = 0
+
+    def move(self):
+        self.p = self.p[0] + 1, self.p[1] + np.tan(np.deg2rad(self.direct))
 
 
 class Unit(object):
@@ -129,5 +165,5 @@ def draw_screen(ls, screen):
 
 
 if __name__ == '__main__':
-    ws = WS()
-    WS().run()
+    bew = BEW()
+    bew.run()
