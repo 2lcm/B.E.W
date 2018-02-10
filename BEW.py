@@ -54,11 +54,14 @@ class BEW(object):
             pygame.display.update()
 
             temp_fire = self.gunfire.head.next
-            # while temp_fire != self.gunfire.tail:
-            #     if self.out_of_map(temp_fire.val):
-            #         temp_fire.val.move()
-            #     else:
-            #         self.gunfire.delete(temp_fire)
+            while temp_fire != self.gunfire.tail:
+                next_fire = temp_fire.next
+                if self.out_of_map(temp_fire.val):
+                    temp_fire.val.move()
+                else:
+                    self.gunfire.delete(temp_fire)
+                temp_fire = next_fire
+
 
             # handle events
             for event in pygame.event.get():
@@ -121,7 +124,7 @@ class BEW(object):
                     user.direct += 180
 
     def out_of_map(self, bullet):
-        if 800 > bullet.p[0] > 0 and 600 > bullet.p[1] > 0:
+        if 1600 > bullet.p[0] > 0 and 1200 > bullet.p[1] > 0:
             return True
         else:
             return False
@@ -132,9 +135,10 @@ class M_gun(object):
         self.p = [0, 0]
         self.img = temp_bullet_img
         self.direct = 0
+        self.leng = BULLET_LENGTH
 
     def move(self):
-        self.p = self.p[0] + 1, self.p[1] + np.tan(np.deg2rad(self.direct))
+        self.p = self.p[0] + np.cos(np.deg2rad(self.direct))*50, self.p[1] - np.sin(np.deg2rad(self.direct))*50
 
 
 class Unit(object):
@@ -142,6 +146,7 @@ class Unit(object):
         self.p = [0, 0]
         self.img = None
         self.direct = 0  # deg
+        self.leng = UNIT_LENGTH
 
     def move(self, d):
         self.p = self.p[0] + d[0], self.p[1] + d[1]
@@ -159,7 +164,7 @@ def draw_screen(ls, screen):
         cur = LL.head.next
         while cur != LL.tail:
             new_img = pygame.transform.rotate(cur.val.img, cur.val.direct)
-            new_p = cur.val.p[0] - int(UNIT_LENGTH / 2), cur.val.p[1] - int(UNIT_LENGTH / 2)
+            new_p = cur.val.p[0] - int(cur.val.leng / 2), cur.val.p[1] - int(cur.val.leng / 2)
             screen.blit(new_img, new_p)
             cur = cur.next
 
