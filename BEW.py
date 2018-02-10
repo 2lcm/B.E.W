@@ -10,7 +10,7 @@ BULLET_LENGTH = 30
 
 map_img = pygame.image.load("map.png")
 
-unit_img = pygame.image.load("unit (1).png")
+unit_img = pygame.image.load("unit.png")
 unit_img = pygame.transform.scale(unit_img, (UNIT_LENGTH, UNIT_LENGTH))
 temp_bullet_img = pygame.image.load("bullet.png")
 temp_bullet_img = pygame.transform.scale(temp_bullet_img, (BULLET_LENGTH, BULLET_LENGTH))
@@ -61,7 +61,6 @@ class BEW(object):
                 else:
                     self.gunfire.delete(temp_fire)
                 temp_fire = next_fire
-
 
             # handle events
             for event in pygame.event.get():
