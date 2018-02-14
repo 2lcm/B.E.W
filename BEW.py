@@ -10,11 +10,32 @@ BULLET_LENGTH = 30
 
 map_img = pygame.image.load("map.png")
 
-unit_img = pygame.image.load("unit.png")
+unit_img = pygame.image.load("white_unit.png")
 unit_img = pygame.transform.scale(unit_img, (UNIT_LENGTH, UNIT_LENGTH))
 temp_bullet_img = pygame.image.load("bullet.png")
 temp_bullet_img = pygame.transform.scale(temp_bullet_img, (BULLET_LENGTH, BULLET_LENGTH))
 
+# lines of figure in map
+# rectangle, rectangle, rectangle, hexagon, rectangle, rectangle
+map_lines = \
+    [
+        ((200, 176), (200, 450)), ((200, 450), (476, 450)), ((476, 450), (476, 176)), ((476, 176), (200, 176)),
+        ((834, 505), (934, 592)), ((934, 592), (767, 789)), ((767, 789), (664, 702)), ((664, 702), (834, 505)),
+        ((282, 658), (282, 1034)), ((282, 1034), (346, 1034)), ((346, 1034), (346, 658)),
+        ((346, 658), (282, 658)), ((824, 139), (756, 250)), ((756, 250), (825, 361)), ((825, 361), (963, 361)),
+        ((963, 361), (1026, 250)), ((1026, 250), (963, 129)), ((963, 129), (824, 139)),
+        ((1224, 411), (1172, 527)), ((1172, 527), (1350, 609)), ((1350, 609), (1402, 492)),
+        ((1402, 492), (1224, 411)), ((1088, 889), (1121, 1073)), ((1121, 1073), (1332, 1034)),
+        ((1332, 1034), (1299, 852)), ((1299, 852), (1088, 889)),((0,0),(1600,0)),((0,0),(0,1200)),((0,1200),(1600,1200)), ((1600,1200),(1600,0))
+     ]
+# points of figure in map
+map_points = \
+    [
+        (200, 176), (200, 450), (476, 450), (476, 176), (834, 505), (934, 592), (767, 789), (664, 702),
+        (282, 658), (282, 1034), (346, 1034), (346, 658), (824, 139), (756, 250), (825, 361), (963, 361),
+        (1026, 250), (963, 129), (1224, 411), (1172, 527), (1350, 609), (1402, 492), (1088, 889), (1121, 1073),
+        (1332, 1034), (1299, 852)
+    ]
 
 class BEW(object):
     def __init__(self):
@@ -29,6 +50,14 @@ class BEW(object):
         tmp.img = unit_img
         tmp.img_rot = tmp.img
         self.units.insert(tmp)
+        self.AIs = LinkedList.LL()
+        tmp = Unit()
+        tmp.p = (850,850)
+        tmp.img = unit_img
+        tmp.img_rot = tmp.img
+        self.AIs.insert(tmp)
+
+
 
     def run(self):
         # define local variables
@@ -37,28 +66,6 @@ class BEW(object):
         down_act = False
         left_act = False
         right_act = False
-        # lines of figure in map
-        # rectangle, rectangle, rectangle, hexagon, rectangle, rectangle
-        map_lines = \
-            [
-                ((200, 176), (200, 450)), ((200, 450), (476, 450)), ((476, 450), (476, 176)), ((476, 176), (200, 176)),
-                ((834, 505), (934, 592)), ((934, 592), (767, 789)), ((767, 789), (664, 702)), ((664, 702), (834, 505)),
-                ((282, 658), (282, 1034)), ((282, 1034), (346, 1034)), ((346, 1034), (346, 658)),
-                ((346, 658), (282, 658)), ((824, 139), (756, 250)), ((756, 250), (825, 361)), ((825, 361), (963, 361)),
-                ((963, 361), (1026, 250)), ((1026, 250), (963, 129)), ((963, 129), (824, 139)),
-                ((1224, 411), (1172, 527)), ((1172, 527), (1350, 609)), ((1350, 609), (1402, 492)),
-                ((1402, 492), (1224, 411)), ((1088, 889), (1121, 1073)), ((1121, 1073), (1332, 1034)),
-                ((1332, 1034), (1299, 852)), ((1299, 852), (1088, 889))
-             ]
-        # points of figure in map
-        map_points = \
-            [
-                (200, 176), (200, 450), (476, 450), (476, 176), (834, 505), (934, 592), (767, 789), (664, 702),
-                (282, 658), (282, 1034), (346, 1034), (346, 658), (824, 139), (756, 250), (825, 361), (963, 361),
-                (1026, 250), (963, 129), (1224, 411), (1172, 527), (1350, 609), (1402, 492), (1088, 889), (1121, 1073),
-                (1332, 1034), (1299, 852)
-            ]
-
         # main routine
         while True:
             # set maximum fps
@@ -66,10 +73,11 @@ class BEW(object):
 
             # local variables
             user = self.units.head.next.val
+
             now_map = map_img.copy()
 
             # draw map
-            draw_screen([self.gunfire, self.units], now_map)
+            draw_screen([self.gunfire, self.units, self.AIs], now_map)
 
             # draw screen
             self.screen.fill((255, 255, 255))
@@ -155,6 +163,22 @@ class BEW(object):
     def out_of_map(self, bullet):
         return 1600 > bullet.p[0] > 0 and 1200 > bullet.p[1] > 0
 
+def collision_clfr(map_info, user_pos):
+    unit_rad = UNIT_LENGTH//2
+    for temp in map_info:
+        tri_side = list(((temp[0][0] - temp[1][0])**2 + (temp[0][1] - temp[1][1])**2, (temp[0][0] - user_pos[0])**2\
+                   + (temp[0][1] - user_pos[1])**2, (temp[1][0] - user_pos[0])**2 + (temp[1][1] - user_pos[1])**2))
+        if tri_side[1] >  tri_side[0] + tri_side[2] or tri_side[2] >  tri_side[0] + tri_side[1]: # 둔각
+            if tri_side[1] < unit_rad **2 or tri_side[0] < unit_rad **2 :
+                return True
+        else: # 예각
+            A2 = (-2 * sum([x**2 for x in tri_side]) + sum([y for y in tri_side])**2) / 16
+            if 4*A2 < tri_side[0] * unit_rad ** 2:
+                return True
+    return False
+
+
+
 
 # check whether the points collide given lines or not
 def line_collision(line_list, point_list):
@@ -202,7 +226,10 @@ class Unit(object):
         self.arr = None
 
     def move(self, d):
-        self.p = self.p[0] + d[0], self.p[1] + d[1]
+        temp = self.p[0] + d[0], self.p[1] + d[1]
+        if collision_clfr(map_lines, temp) == False:
+            self.p = temp
+
 
 
 # take pygame.Surface(screen) and list comprised of LinkedList.LL
