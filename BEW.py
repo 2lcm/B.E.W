@@ -15,6 +15,33 @@ unit_img = pygame.transform.scale(unit_img, (UNIT_LENGTH, UNIT_LENGTH))
 temp_bullet_img = pygame.image.load("bullet.png")
 temp_bullet_img = pygame.transform.scale(temp_bullet_img, (BULLET_LENGTH, BULLET_LENGTH))
 
+# lines of figure in map
+# rectangle, rectangle, rectangle, hexagon, rectangle, rectangle
+map_lines = \
+    [
+        ((200, 176), (200, 450)), ((200, 450), (476, 450)), ((476, 450), (476, 176)), ((476, 176), (200, 176)),
+        ((834, 505), (934, 592)), ((934, 592), (767, 789)), ((767, 789), (664, 702)), ((664, 702), (834, 505)),
+        ((282, 658), (282, 1034)), ((282, 1034), (346, 1034)), ((346, 1034), (346, 658)),
+        ((346, 658), (282, 658)), ((824, 139), (756, 250)), ((756, 250), (825, 361)), ((825, 361), (963, 361)),
+        ((963, 361), (1026, 250)), ((1026, 250), (963, 129)), ((963, 129), (824, 139)),
+        ((1224, 411), (1172, 527)), ((1172, 527), (1350, 609)), ((1350, 609), (1402, 492)),
+        ((1402, 492), (1224, 411)), ((1088, 889), (1121, 1073)), ((1121, 1073), (1332, 1034)),
+        ((1332, 1034), (1299, 852)), ((1299, 852), (1088, 889))
+     ]
+# points of figure in map
+map_points = \
+    [
+        (200, 176), (200, 450), (476, 450), (476, 176), (834, 505), (934, 592), (767, 789), (664, 702),
+        (282, 658), (282, 1034), (346, 1034), (346, 658), (824, 139), (756, 250), (825, 361), (963, 361),
+        (1026, 250), (963, 129), (1224, 411), (1172, 527), (1350, 609), (1402, 492), (1088, 889), (1121, 1073),
+        (1332, 1034), (1299, 852)
+    ]
+
+# index of points
+figures = [((0, 1, 2), (0, 2, 3)), ((4, 5, 6), (4, 6, 7)), ((8, 9, 10), (8, 10, 11)),
+           ((12, 13, 14), (14, 15, 16), (16, 17, 12), (12, 14, 16)), ((18, 19, 20), (18, 20, 21)),
+           ((22, 23, 24), (22, 24, 25))]
+
 
 class BEW(object):
     def __init__(self):
@@ -37,27 +64,6 @@ class BEW(object):
         down_act = False
         left_act = False
         right_act = False
-        # lines of figure in map
-        # rectangle, rectangle, rectangle, hexagon, rectangle, rectangle
-        map_lines = \
-            [
-                ((200, 176), (200, 450)), ((200, 450), (476, 450)), ((476, 450), (476, 176)), ((476, 176), (200, 176)),
-                ((834, 505), (934, 592)), ((934, 592), (767, 789)), ((767, 789), (664, 702)), ((664, 702), (834, 505)),
-                ((282, 658), (282, 1034)), ((282, 1034), (346, 1034)), ((346, 1034), (346, 658)),
-                ((346, 658), (282, 658)), ((824, 139), (756, 250)), ((756, 250), (825, 361)), ((825, 361), (963, 361)),
-                ((963, 361), (1026, 250)), ((1026, 250), (963, 129)), ((963, 129), (824, 139)),
-                ((1224, 411), (1172, 527)), ((1172, 527), (1350, 609)), ((1350, 609), (1402, 492)),
-                ((1402, 492), (1224, 411)), ((1088, 889), (1121, 1073)), ((1121, 1073), (1332, 1034)),
-                ((1332, 1034), (1299, 852)), ((1299, 852), (1088, 889))
-             ]
-        # points of figure in map
-        map_points = \
-            [
-                (200, 176), (200, 450), (476, 450), (476, 176), (834, 505), (934, 592), (767, 789), (664, 702),
-                (282, 658), (282, 1034), (346, 1034), (346, 658), (824, 139), (756, 250), (825, 361), (963, 361),
-                (1026, 250), (963, 129), (1224, 411), (1172, 527), (1350, 609), (1402, 492), (1088, 889), (1121, 1073),
-                (1332, 1034), (1299, 852)
-            ]
 
         # main routine
         while True:
@@ -72,7 +78,7 @@ class BEW(object):
             draw_screen([self.gunfire, self.units], now_map)
 
             # draw screen
-            self.screen.fill((255, 255, 255))
+            self.screen.fill((0, 0, 0))
 
             self.screen.blit(now_map, (-user.p[0]+400, -user.p[1]+300))
             pygame.display.update()
@@ -81,7 +87,8 @@ class BEW(object):
             while temp_fire != self.gunfire.tail:
                 next_fire = temp_fire.next
                 if self.out_of_map(temp_fire.val):
-                    temp_fire.val.move()
+                    if not temp_fire.val.move():
+                        self.gunfire.delete(temp_fire)
                 else:
                     self.gunfire.delete(temp_fire)
                 temp_fire = next_fire
@@ -145,15 +152,33 @@ class BEW(object):
                 if xy[0] < 0:
                     user.direct += 180
 
-            user.arr = pygame.surfarray.array3d(user.img_rot)
-
-            cur = self.gunfire.head.next
-            while cur != self.gunfire.tail:
-                cur.val.arr = pygame.surfarray.array3d(cur.val.img_rot)
-                cur = cur.next
-
     def out_of_map(self, bullet):
         return 1600 > bullet.p[0] > 0 and 1200 > bullet.p[1] > 0
+
+
+def in_triangular(p1, p2, p3, check_p):
+    def magnitude(v):
+        return (v[0] ** 2 + v[1] ** 2) ** (1/2)
+
+    def angular(v1, v2):
+        try:
+            return np.arccos((v1[0] * v2[0] + v1[1] * v2[1]) / (magnitude(v1) * magnitude(v2)))
+        except ZeroDivisionError:
+            return 0
+
+    ang_sum = 0
+    v = [(p[0] - check_p[0], p[1] - check_p[1]) for p in [p1, p2, p3]]
+    for i in range(3):
+        ang_sum += angular(v[i], v[(i+1) % 3])
+    return np.pi * 350/180 < ang_sum < np.pi * 370/180
+
+
+def in_figures(fig, p):
+    for figure in fig:
+        for tri in figure:
+            if in_triangular(map_points[tri[0]], map_points[tri[1]], map_points[tri[2]], p):
+                return True
+    return False
 
 
 # check whether the points collide given lines or not
@@ -167,7 +192,7 @@ def line_collision(line_list, point_list):
         else:
             m = (y2 - y1) / (x2 - x1)
             d = ((m * (x3 - x1) + (y1 - y3)) ** 2) / (1 + m**2)
-        return d <= 2 and ((x1 <= x3 <= x2) or (x2 <= x3 <= x1)) and ((y1 <= y3 <= y2) or (y2 <= y3 <= y1))
+        return d <= 10 and ((x1 <= x3 <= x2) or (x2 <= x3 <= x1)) and ((y1 <= y3 <= y2) or (y2 <= y3 <= y1))
 
     res = []
     for i in range(len(point_list)):
@@ -182,14 +207,17 @@ def line_collision(line_list, point_list):
 # bullet class
 class M_gun(object):
     def __init__(self):
-        self.p = [0, 0]
+        self.p = (0, 0)
         self.img = temp_bullet_img
         self.img_rot = self.img
         self.direct = 0
-        self.arr = None
 
+    # return True, if move successfully. If not, return False
     def move(self):
-        self.p = self.p[0] + np.cos(np.deg2rad(self.direct))*50, self.p[1] - np.sin(np.deg2rad(self.direct))*50
+        self.p = int(self.p[0] + np.cos(np.deg2rad(self.direct))*50), int(self.p[1] - np.sin(np.deg2rad(self.direct))*50)
+        if in_figures(figures, self.p):
+            return False
+        return True
 
 
 # wandering unit including user unit
@@ -199,8 +227,8 @@ class Unit(object):
         self.img = None
         self.img_rot = None
         self.direct = 0  # deg
-        self.arr = None
 
+    # return True, if move successfully. If not, return False
     def move(self, d):
         self.p = self.p[0] + d[0], self.p[1] + d[1]
 
