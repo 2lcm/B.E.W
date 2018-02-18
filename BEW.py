@@ -6,6 +6,7 @@ import numpy as np
 MAXFPS = 50
 SCREEN_SIZE = 800, 600
 UNIT_LENGTH = 101  # must be odd numbers
+UNIT_RAD2 = (UNIT_LENGTH//2)**2
 BULLET_LENGTH = 30
 
 map_img = pygame.image.load("map.png")
@@ -101,6 +102,41 @@ class BEW(object):
                 else:
                     self.gunfire.delete(temp_fire)
                 temp_fire = next_fire
+            user_done = False
+            first_AIs = False
+            temp_unit = self.units.head.next
+            temp_unit = self.AIs.head.next
+            while True:
+                temp_fire = self.gunfire.head.next
+                if temp_fire == self.gunfire.tail or temp_unit == self.AIs.tail:
+                    break
+                while True:
+                    if temp_fire == self.gunfire.tail:
+                        break
+                    temp_next_fire = temp_fire.next
+                    if (temp_unit.val.p[0] - temp_fire.val.p[0])**2 + (temp_unit.val.p[1] - temp_fire.val.p[1])**2 < UNIT_RAD2:
+                        temp_unit.val.life -=1
+                        print('life is :', temp_unit.val.life)
+                        self.gunfire.delete(temp_fire)
+                    if temp_unit.val.life == 0:
+                        self.AIs.delete(temp_unit)
+                    if temp_next_fire == self.gunfire.tail:
+                        break
+                    temp_fire = temp_next_fire
+                if temp_unit.next == self.units.tail:
+                    user_done = True
+                elif temp_unit == self.AIs.head.next:
+                    first_AIs = True
+
+                if user_done == False:
+                    temp_unit = temp_unit.next
+                else:
+                    if first_AIs == False:
+                        temp_unit = self.AIs.head.next
+                    else:
+                        temp_unit = temp_unit.next
+
+
 
             # handle events
             for event in pygame.event.get():
@@ -204,27 +240,6 @@ def in_figures(fig, p):
     return False
 
 
-# check whether the points collide given lines or not
-def line_collision(line_list, point_list):
-    def line_point(l, p):
-        x1, y1 = l[0]
-        x2, y2 = l[1]
-        x3, y3 = p
-        if x1 == x2:
-            d = (x3 - x1) ** 2
-        else:
-            m = (y2 - y1) / (x2 - x1)
-            d = ((m * (x3 - x1) + (y1 - y3)) ** 2) / (1 + m**2)
-        return d <= 10 and ((x1 <= x3 <= x2) or (x2 <= x3 <= x1)) and ((y1 <= y3 <= y2) or (y2 <= y3 <= y1))
-
-    res = []
-    for i in range(len(point_list)):
-        res.append(False)
-        for j in range(len(line_list)):
-            if line_point(line_list[j], point_list[i]):
-                res[-1] = True
-                break
-    return res
 
 
 # bullet class
@@ -250,6 +265,7 @@ class Unit(object):
         self.img = None
         self.img_rot = None
         self.direct = 0  # deg
+        self.life = 10
 
     # return True, if move successfully. If not, return False
     def move(self, d):
