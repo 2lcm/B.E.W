@@ -63,8 +63,6 @@ class BEW(object):
         tmp.img_rot = tmp.img
         self.AIs.insert(tmp)
 
-
-
     def run(self):
         # define local variables
         fps_clk = pygame.time.Clock()
@@ -164,6 +162,7 @@ class BEW(object):
     def out_of_map(self, bullet):
         return 1600 > bullet.p[0] > 0 and 1200 > bullet.p[1] > 0
 
+
 def collision_clfr(map_info, user_pos):
     unit_rad = UNIT_LENGTH//2
     for temp in map_info:
@@ -202,29 +201,6 @@ def in_figures(fig, p):
             if in_triangular(map_points[tri[0]], map_points[tri[1]], map_points[tri[2]], p):
                 return True
     return False
-
-
-# check whether the points collide given lines or not
-def line_collision(line_list, point_list):
-    def line_point(l, p):
-        x1, y1 = l[0]
-        x2, y2 = l[1]
-        x3, y3 = p
-        if x1 == x2:
-            d = (x3 - x1) ** 2
-        else:
-            m = (y2 - y1) / (x2 - x1)
-            d = ((m * (x3 - x1) + (y1 - y3)) ** 2) / (1 + m**2)
-        return d <= 10 and ((x1 <= x3 <= x2) or (x2 <= x3 <= x1)) and ((y1 <= y3 <= y2) or (y2 <= y3 <= y1))
-
-    res = []
-    for i in range(len(point_list)):
-        res.append(False)
-        for j in range(len(line_list)):
-            if line_point(line_list[j], point_list[i]):
-                res[-1] = True
-                break
-    return res
 
 
 # bullet class
