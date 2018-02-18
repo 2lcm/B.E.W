@@ -64,8 +64,6 @@ class BEW(object):
         tmp.img_rot = tmp.img
         self.AIs.insert(tmp)
 
-
-
     def run(self):
         # define local variables
         fps_clk = pygame.time.Clock()
@@ -200,6 +198,7 @@ class BEW(object):
     def out_of_map(self, bullet):
         return 1600 > bullet.p[0] > 0 and 1200 > bullet.p[1] > 0
 
+
 def collision_clfr(map_info, user_pos):
     unit_rad = UNIT_LENGTH//2
     for temp in map_info:
@@ -238,7 +237,6 @@ def in_figures(fig, p):
             if in_triangular(map_points[tri[0]], map_points[tri[1]], map_points[tri[2]], p):
                 return True
     return False
-
 
 
 
