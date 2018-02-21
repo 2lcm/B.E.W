@@ -79,18 +79,17 @@ class BEW(object):
     def run(self):
         # define local variables
         fps_clk = pygame.time.Clock()
+        user = self.Team1.head.next.val
+        ai = self.Team2.head.next.val
 
         # main routine
         while True:
             # set maximum fps
             fps_clk.tick(MAXFPS)
 
-            # local variables
-            user = self.Team1.head.next.val
-            now_map = map_img.copy()
-
             # draw map
-            draw_screen([self.gunfire1, self.Team1, self.Team2], now_map)
+            now_map = map_img.copy()
+            draw_screen([self.gunfire1, self.gunfire2, self.Team1, self.Team2], now_map)
 
             # draw screen
             self.screen.fill((0, 0, 0))
@@ -106,6 +105,16 @@ class BEW(object):
                         self.gunfire1.delete(temp_fire)
                 else:
                     self.gunfire1.delete(temp_fire)
+                temp_fire = next_fire
+
+            temp_fire = self.gunfire2.head.next
+            while temp_fire != self.gunfire2.tail:
+                next_fire = temp_fire.next
+                if self.out_of_map(temp_fire.val):
+                    if not temp_fire.val.move():
+                        self.gunfire2.delete(temp_fire)
+                else:
+                    self.gunfire2.delete(temp_fire)
                 temp_fire = next_fire
 
             # handle team1 bullets
@@ -124,6 +133,24 @@ class BEW(object):
                 temp_unit = temp_unit.next
                 if cur_unit.life <= 0:
                     self.Team2.delete(temp_unit.prev)
+
+            # handle team2 bullets
+            temp_unit = self.Team1.head.next
+            while temp_unit != self.Team1.tail:
+                cur_unit = temp_unit.val
+                temp_fire = self.gunfire2.head.next
+                while temp_fire != self.gunfire2.tail:
+                    if (cur_unit.p[0] - temp_fire.val.p[0]) ** 2 + (
+                            cur_unit.p[1] - temp_fire.val.p[1]) ** 2 < UNIT_RAD2:
+                        cur_unit.life -= 1
+                        print('life is :', cur_unit.life)
+                        temp_fire = temp_fire.next
+                        self.gunfire2.delete(temp_fire.prev)
+                    else:
+                        temp_fire = temp_fire.next
+                temp_unit = temp_unit.next
+                if cur_unit.life <= 0:
+                    self.Team1.delete(temp_unit.prev)
 
             # handle events and user unit
             for event in pygame.event.get():
@@ -155,28 +182,38 @@ class BEW(object):
                     if event.key == pygame.K_d:
                         user.act[3] = False
 
-            # move user
-            user.move()
-
+            # update user attribute
             user.atk = pygame.mouse.get_pressed()[0]
-            if user.atk:
-                new_shot = M_gun()
-                new_shot.p = user.p
-                new_shot.direct = user.direct
-                self.gunfire1.insert(new_shot)
+            user.look = (user.p[0] - 400 + pygame.mouse.get_pos()[0], user.p[1] - 300 + pygame.mouse.get_pos()[1])
 
-            # make user unit look toward mouse position
-            user.look = pygame.mouse.get_pos()
-            xy = np.subtract(np.array(user.look), np.array((400, 300)))
-            if xy[0] == 0:
-                if xy[1] / abs(xy[1]) == 1:
-                    user.direct = -90
-                else:
-                    user.direct = 90
-            else:
-                user.direct = 0 - np.rad2deg(np.arctan(xy[1] / xy[0]))
-                if xy[0] < 0:
-                    user.direct += 180
+            # update AI attributes
+            ai.atk = True
+            ai.look = user.p
+            ai.act[0] = ai.p[1] > user.p[1]
+            ai.act[1] = ai.p[1] < user.p[1]
+            ai.act[2] = ai.p[0] > user.p[0]
+            ai.act[3] = ai.p[0] < user.p[0]
+
+            # move, change direct, attacks
+            cur_node = self.Team1.head.next
+            while cur_node != self.Team1.tail:
+                cur_node.val.update()
+                if cur_node.val.atk:
+                    new_shot = M_gun()
+                    new_shot.p = cur_node.val.p
+                    new_shot.direct = cur_node.val.direct
+                    self.gunfire1.insert(new_shot)
+                cur_node = cur_node.next
+
+            cur_node = self.Team2.head.next
+            while cur_node != self.Team2.tail:
+                cur_node.val.update()
+                if cur_node.val.atk:
+                    new_shot = M_gun()
+                    new_shot.p = cur_node.val.p
+                    new_shot.direct = cur_node.val.direct
+                    self.gunfire2.insert(new_shot)
+                cur_node = cur_node.next
 
     def out_of_map(self, bullet):
         return 1600 > bullet.p[0] > 0 and 1200 > bullet.p[1] > 0
@@ -248,7 +285,7 @@ class Unit(object):
         self.img_rot = None
         self.direct = 0  # deg
         self.life = 10
-        self.look = None
+        self.look = [0, 0]
         self.act = [False, False, False, False]  # up, down, left, right
         self.atk = False
 
@@ -259,6 +296,20 @@ class Unit(object):
                 temp = self.p[0] + d[b[0]][0], self.p[1] + d[b[0]][1]
                 if not collision_clfr(map_lines, temp):
                     self.p = temp
+
+    # make user unit look toward the particular position
+    def update(self):
+        self.move()
+        xy = np.subtract(np.array(self.look), np.array(self.p))
+        if xy[0] == 0:
+            if xy[1] / abs(xy[1]) == 1:
+                self.direct = -90
+            else:
+                self.direct = 90
+        else:
+            self.direct = 0 - np.rad2deg(np.arctan(xy[1] / xy[0]))
+            if xy[0] < 0:
+                self.direct += 180
 
 
 # take pygame.Surface(screen) and list comprised of LinkedList.LL
