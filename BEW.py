@@ -16,61 +16,69 @@ unit_img = pygame.transform.scale(unit_img, (UNIT_LENGTH, UNIT_LENGTH))
 temp_bullet_img = pygame.image.load("bullet.png")
 temp_bullet_img = pygame.transform.scale(temp_bullet_img, (BULLET_LENGTH, BULLET_LENGTH))
 
+# points of figure in map
+file_points = open("points.txt", "r")
+map_points = []
+n = int(file_points.readline())
+for i in range(n):
+    line = file_points.readline()
+    map_points.append((int(line.split()[0]), int(line.split()[1])))
+file_points.close()
+
 # lines of figure in map
 # rectangle, rectangle, rectangle, hexagon, rectangle, rectangle
-map_lines = \
-    [
-        ((200, 176), (200, 450)), ((200, 450), (476, 450)), ((476, 450), (476, 176)), ((476, 176), (200, 176)),
-        ((834, 505), (934, 592)), ((934, 592), (767, 789)), ((767, 789), (664, 702)), ((664, 702), (834, 505)),
-        ((282, 658), (282, 1034)), ((282, 1034), (346, 1034)), ((346, 1034), (346, 658)),
-        ((346, 658), (282, 658)), ((824, 139), (756, 250)), ((756, 250), (825, 361)), ((825, 361), (963, 361)),
-        ((963, 361), (1026, 250)), ((1026, 250), (963, 129)), ((963, 129), (824, 139)),
-        ((1224, 411), (1172, 527)), ((1172, 527), (1350, 609)), ((1350, 609), (1402, 492)),
-        ((1402, 492), (1224, 411)), ((1088, 889), (1121, 1073)), ((1121, 1073), (1332, 1034)),
-        ((1332, 1034), (1299, 852)), ((1299, 852), (1088, 889)),((0,0),(1600,0)),((0,0),(0,1200)),((0,1200),(1600,1200)), ((1600,1200),(1600,0))
-     ]
-# points of figure in map
-map_points = \
-    [
-        (200, 176), (200, 450), (476, 450), (476, 176), (834, 505), (934, 592), (767, 789), (664, 702),
-        (282, 658), (282, 1034), (346, 1034), (346, 658), (824, 139), (756, 250), (825, 361), (963, 361),
-        (1026, 250), (963, 129), (1224, 411), (1172, 527), (1350, 609), (1402, 492), (1088, 889), (1121, 1073),
-        (1332, 1034), (1299, 852)
-    ]
+file_lines = open("lines.txt", "r")
+map_lines = []
+n = int(file_lines.readline())
+for i in range(n):
+    line = file_lines.readline()
+    a = map_points[int(line.split()[0])]
+    b = map_points[int(line.split()[1])]
+    map_lines.append((a, b))
+map_lines += [((0, 0), (1600, 0)), ((1600, 0), (1600, 1200)), ((1600, 1200), (0, 1200)), ((0, 1200), (0, 0))]
+file_lines.close()
 
-# index of points
-figures = [((0, 1, 2), (0, 2, 3)), ((4, 5, 6), (4, 6, 7)), ((8, 9, 10), (8, 10, 11)),
-           ((12, 13, 14), (14, 15, 16), (16, 17, 12), (12, 14, 16)), ((18, 19, 20), (18, 20, 21)),
-           ((22, 23, 24), (22, 24, 25))]
+# figures in map made with triangles
+file_figures = open("figures.txt", "r")
+figures = []
+n = int(file_figures.readline())
+for i in range(n):
+    line = file_figures.readline().split()
+    tmp1 = []
+    for j in range(len(line)//3):
+        tmp2 = []
+        for k in range(3):
+            a = int(line[3 * j + k])
+            tmp2.append(map_points[a])
+        tmp1.append(tmp2)
+    figures.append(tmp1)
+file_figures.close()
 
 
 class BEW(object):
     def __init__(self):
         pygame.init()
         pygame.key.set_repeat(10, 25)
-        # pygame.event.set_blocked(pygame.MOUSEMOTION)
+        pygame.event.set_blocked(pygame.MOUSEMOTION)
         self.screen = pygame.display.set_mode(SCREEN_SIZE)
-        self.units = LinkedList.LL()
-        self.gunfire = LinkedList.LL()
+        self.Team1 = LinkedList.LL()
+        self.Team2 = LinkedList.LL()
+        self.gunfire1 = LinkedList.LL()
+        self.gunfire2 = LinkedList.LL()
         tmp = Unit()
         tmp.p = (600, 600)
         tmp.img = unit_img
         tmp.img_rot = tmp.img
-        self.units.insert(tmp)
-        self.AIs = LinkedList.LL()
+        self.Team1.insert(tmp)
         tmp = Unit()
-        tmp.p = (850,850)
+        tmp.p = (850, 850)
         tmp.img = unit_img
         tmp.img_rot = tmp.img
-        self.AIs.insert(tmp)
+        self.Team2.insert(tmp)
 
     def run(self):
         # define local variables
         fps_clk = pygame.time.Clock()
-        up_act = False
-        down_act = False
-        left_act = False
-        right_act = False
 
         # main routine
         while True:
@@ -78,68 +86,48 @@ class BEW(object):
             fps_clk.tick(MAXFPS)
 
             # local variables
-            user = self.units.head.next.val
-
+            user = self.Team1.head.next.val
             now_map = map_img.copy()
 
             # draw map
-            draw_screen([self.gunfire, self.units, self.AIs], now_map)
+            draw_screen([self.gunfire1, self.Team1, self.Team2], now_map)
 
             # draw screen
             self.screen.fill((0, 0, 0))
-
             self.screen.blit(now_map, (-user.p[0]+400, -user.p[1]+300))
             pygame.display.update()
 
-            temp_fire = self.gunfire.head.next
-            while temp_fire != self.gunfire.tail:
+            # handle bullets
+            temp_fire = self.gunfire1.head.next
+            while temp_fire != self.gunfire1.tail:
                 next_fire = temp_fire.next
                 if self.out_of_map(temp_fire.val):
                     if not temp_fire.val.move():
-                        self.gunfire.delete(temp_fire)
+                        self.gunfire1.delete(temp_fire)
                 else:
-                    self.gunfire.delete(temp_fire)
+                    self.gunfire1.delete(temp_fire)
                 temp_fire = next_fire
-            user_done = False
-            first_AIs = False
-            temp_unit = self.units.head.next
-            temp_unit = self.AIs.head.next
-            while True:
-                temp_fire = self.gunfire.head.next
-                if temp_fire == self.gunfire.tail or temp_unit == self.AIs.tail:
-                    break
-                while True:
-                    if temp_fire == self.gunfire.tail:
-                        break
-                    temp_next_fire = temp_fire.next
-                    if (temp_unit.val.p[0] - temp_fire.val.p[0])**2 + (temp_unit.val.p[1] - temp_fire.val.p[1])**2 < UNIT_RAD2:
-                        temp_unit.val.life -=1
-                        print('life is :', temp_unit.val.life)
-                        self.gunfire.delete(temp_fire)
-                    if temp_unit.val.life == 0:
-                        self.AIs.delete(temp_unit)
-                    if temp_next_fire == self.gunfire.tail:
-                        break
-                    temp_fire = temp_next_fire
-                if temp_unit.next == self.units.tail:
-                    user_done = True
-                elif temp_unit == self.AIs.head.next:
-                    first_AIs = True
 
-                if user_done == False:
-                    temp_unit = temp_unit.next
-                else:
-                    if first_AIs == False:
-                        temp_unit = self.AIs.head.next
+            # handle team1 bullets
+            temp_unit = self.Team2.head.next
+            while temp_unit != self.Team2.tail:
+                cur_unit = temp_unit.val
+                temp_fire = self.gunfire1.head.next
+                while temp_fire != self.gunfire1.tail:
+                    if (cur_unit.p[0] - temp_fire.val.p[0])**2 + (cur_unit.p[1] - temp_fire.val.p[1])**2 < UNIT_RAD2:
+                        cur_unit.life -= 1
+                        print('life is :', cur_unit.life)
+                        temp_fire = temp_fire.next
+                        self.gunfire1.delete(temp_fire.prev)
                     else:
-                        temp_unit = temp_unit.next
+                        temp_fire = temp_fire.next
+                temp_unit = temp_unit.next
+                if cur_unit.life <= 0:
+                    self.Team2.delete(temp_unit.prev)
 
-
-
-            # handle events
+            # handle events and user unit
             for event in pygame.event.get():
                 # when click x button on window
-
                 if event.type == pygame.QUIT:
                     sys.exit()
                 # when press the keyboard
@@ -147,44 +135,39 @@ class BEW(object):
                     if event.key == pygame.K_ESCAPE:
                         sys.exit()
                     if event.key == pygame.K_w:
-                        up_act = True
-                    if event.key == pygame.K_a:
-                        left_act = True
-                    if event.key == pygame.K_d:
-                        right_act = True
+                        user.act[0] = True
                     if event.key == pygame.K_s:
-                        down_act = True
+                        user.act[1] = True
+                    if event.key == pygame.K_a:
+                        user.act[2] = True
+                    if event.key == pygame.K_d:
+                        user.act[3] = True
 
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
                         sys.exit()
                     if event.key == pygame.K_w:
-                        up_act = False
-                    if event.key == pygame.K_a:
-                        left_act = False
-                    if event.key == pygame.K_d:
-                        right_act = False
+                        user.act[0] = False
                     if event.key == pygame.K_s:
-                        down_act = False
+                        user.act[1] = False
+                    if event.key == pygame.K_a:
+                        user.act[2] = False
+                    if event.key == pygame.K_d:
+                        user.act[3] = False
 
-            # move "wasd"
-            if up_act:
-                user.move((0, -2))
-            if down_act:
-                user.move((0, 2))
-            if left_act:
-                user.move((-2, 0))
-            if right_act:
-                user.move((2, 0))
+            # move user
+            user.move()
 
-            if pygame.mouse.get_pressed()[0]:
+            user.atk = pygame.mouse.get_pressed()[0]
+            if user.atk:
                 new_shot = M_gun()
                 new_shot.p = user.p
                 new_shot.direct = user.direct
-                self.gunfire.insert(new_shot)
+                self.gunfire1.insert(new_shot)
 
             # make user unit look toward mouse position
-            xy = np.subtract(np.array(pygame.mouse.get_pos()), np.array((400, 300)))
+            user.look = pygame.mouse.get_pos()
+            xy = np.subtract(np.array(user.look), np.array((400, 300)))
             if xy[0] == 0:
                 if xy[1] / abs(xy[1]) == 1:
                     user.direct = -90
@@ -214,6 +197,7 @@ def collision_clfr(map_info, user_pos):
     return False
 
 
+# check whether given point is in the triangle made by three points
 def in_triangular(p1, p2, p3, check_p):
     def magnitude(v):
         return (v[0] ** 2 + v[1] ** 2) ** (1/2)
@@ -231,13 +215,13 @@ def in_triangular(p1, p2, p3, check_p):
     return np.pi * 350/180 < ang_sum < np.pi * 370/180
 
 
+# check given points are in that figure
 def in_figures(fig, p):
     for figure in fig:
         for tri in figure:
-            if in_triangular(map_points[tri[0]], map_points[tri[1]], map_points[tri[2]], p):
+            if in_triangular(tri[0], tri[1], tri[2], p):
                 return True
     return False
-
 
 
 # bullet class
@@ -264,12 +248,17 @@ class Unit(object):
         self.img_rot = None
         self.direct = 0  # deg
         self.life = 10
+        self.look = None
+        self.act = [False, False, False, False]  # up, down, left, right
+        self.atk = False
 
-    # return True, if move successfully. If not, return False
-    def move(self, d):
-        temp = self.p[0] + d[0], self.p[1] + d[1]
-        if collision_clfr(map_lines, temp) == False:
-            self.p = temp
+    def move(self):
+        d = ((0, -2), (0, 2), (-2, 0), (2, 0))
+        for b in enumerate(self.act):
+            if b[1]:
+                temp = self.p[0] + d[b[0]][0], self.p[1] + d[b[0]][1]
+                if not collision_clfr(map_lines, temp):
+                    self.p = temp
 
 
 # take pygame.Surface(screen) and list comprised of LinkedList.LL

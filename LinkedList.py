@@ -38,6 +38,7 @@ class LL(object):
         prev.next = next
         next.prev = prev
         del target
+        return next
 
     def print_all(self):
         cur = self.head.next
