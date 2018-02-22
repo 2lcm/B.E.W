@@ -183,16 +183,19 @@ class BEW(object):
                         user.act[3] = False
 
             # update user attribute
-            user.atk = pygame.mouse.get_pressed()[0]
-            user.look = (user.p[0] - 400 + pygame.mouse.get_pos()[0], user.p[1] - 300 + pygame.mouse.get_pos()[1])
+            if user is not None:
+                user.atk = pygame.mouse.get_pressed()[0]
+                user.look = (user.p[0] - 400 + pygame.mouse.get_pos()[0], user.p[1] - 300 + pygame.mouse.get_pos()[1])
 
             # update AI attributes
-            ai.atk = True
-            ai.look = user.p
-            ai.act[0] = ai.p[1] > user.p[1]
-            ai.act[1] = ai.p[1] < user.p[1]
-            ai.act[2] = ai.p[0] > user.p[0]
-            ai.act[3] = ai.p[0] < user.p[0]
+            # we will make this as function and more intelligent
+            if ai is not None:
+                ai.atk = not ai.atk
+                ai.look = user.p
+                ai.act[0] = ai.p[1] > user.p[1]
+                ai.act[1] = ai.p[1] < user.p[1]
+                ai.act[2] = ai.p[0] > user.p[0]
+                ai.act[3] = ai.p[0] < user.p[0]
 
             # move, change direct, attacks
             cur_node = self.Team1.head.next
