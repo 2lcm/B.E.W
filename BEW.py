@@ -2,6 +2,7 @@ import pygame
 import sys
 import LinkedList
 import numpy as np
+import Graph
 
 MAXFPS = 50
 SCREEN_SIZE = 800, 600
@@ -10,7 +11,6 @@ UNIT_RAD2 = (UNIT_LENGTH//2)**2
 BULLET_LENGTH = 30
 
 map_img = pygame.image.load("map.png")
-
 unit_img = pygame.image.load("white_unit.png")
 unit_img = pygame.transform.scale(unit_img, (UNIT_LENGTH, UNIT_LENGTH))
 temp_bullet_img = pygame.image.load("bullet.png")
@@ -125,7 +125,7 @@ class BEW(object):
                 while temp_fire != self.gunfire1.tail:
                     if (cur_unit.p[0] - temp_fire.val.p[0])**2 + (cur_unit.p[1] - temp_fire.val.p[1])**2 < UNIT_RAD2:
                         cur_unit.life -= 1
-                        print('life is :', cur_unit.life)
+                        # print('life is :', cur_unit.life)
                         temp_fire = temp_fire.next
                         self.gunfire1.delete(temp_fire.prev)
                     else:
@@ -190,12 +190,52 @@ class BEW(object):
             # update AI attributes
             # we will make this as function and more intelligent
             if ai is not None:
-                ai.atk = not ai.atk
+                # ai.atk = not ai.atk
                 ai.look = user.p
-                ai.act[0] = ai.p[1] > user.p[1]
-                ai.act[1] = ai.p[1] < user.p[1]
-                ai.act[2] = ai.p[0] > user.p[0]
-                ai.act[3] = ai.p[0] < user.p[0]
+
+                arr = [
+                    (126, 112), (125, 525), (563, 523), (569, 113),  # 0 ~ 3
+                    (230, 604), (232, 1077), (403, 1075), (396, 607),  # 4 ~ 7
+                    (791, 422), (553, 695), (767, 874), (1029, 575),  # 8 ~ 11
+                    (794, 85), (698, 247), (986, 416), (1070, 249), (982, 83),  # 12 ~ 16
+                    (980, 823), (1040, 1160), (1454, 1088), (1388, 742),  # 17 ~ 20
+                    (1167, 290), (1523, 458)  # 21, 22
+                       ]
+                # 0
+                e = [[1, 3], [0, 2, 4], [3, 7, 8, 9, 13], [0, 2, 12, 13],
+                     [1, 5, 7], [4, 6], [7, 5, 9, 10, 18], [2, 4, 6, 9],
+                     [2, 9, 11, 13, 14], [2, 6, 7, 8, 10], [6, 9, 11, 17, 18], [8, 10, 14, 17, 20, 21],
+                     [3, 13, 16], [2, 3, 8, 12], [8, 11, 15], [14, 16, 21], [12, 15],
+                     [10, 11, 18, 20], [6, 10, 17, 19], [18, 20], [11, 17, 19, 22],
+                     [11, 15, 22], [20, 21]]
+
+                d = []
+                for i in range(len(arr)):
+                    dd = []
+                    for j in range(len(e)):
+                        if j in e[i]:
+                            dd.append(dist(arr[i], arr[j]))
+                        else:
+                            dd.append(None)
+                    d.append(dd)
+
+                if ai.path_find:
+                    arr2 = [dist(ai.p, arr[i]) for i in range(len(arr))]
+                    arr3 = [dist(user.p, arr[i]) for i in range(len(arr))]
+                    start = arr2.index(min(arr2))
+                    ai.dest = arr3.index(min(arr3))
+
+                    ai.path = Graph.Graph(d).dijkstra(start, ai.dest)
+                    ai.path_status = 0
+                    ai.path_find = False
+
+                now_dest = arr[ai.path[ai.path_status]]
+                ai.act[0] = ai.p[1] > now_dest[1]
+                ai.act[1] = ai.p[1] < now_dest[1]
+                ai.act[2] = ai.p[0] > now_dest[0]
+                ai.act[3] = ai.p[0] < now_dest[0]
+                if ai.p[1] == now_dest[1] and ai.p[0] == now_dest[0] and ai.path_status != len(ai.path) - 1:
+                    ai.path_status += 1
 
             # move, change direct, attacks
             cur_node = self.Team1.head.next
@@ -291,9 +331,13 @@ class Unit(object):
         self.look = [0, 0]
         self.act = [False, False, False, False]  # up, down, left, right
         self.atk = False
+        self.path = []
+        self.path_status = -1
+        self.dest = None
+        self.path_find = True
 
     def move(self):
-        d = ((0, -2), (0, 2), (-2, 0), (2, 0))
+        d = ((0, -1), (0, 1), (-1, 0), (1, 0))
         for b in enumerate(self.act):
             if b[1]:
                 temp = self.p[0] + d[b[0]][0], self.p[1] + d[b[0]][1]
@@ -331,6 +375,10 @@ def draw_screen(ls, screen):
             new_p = cur.val.p[0] - int(new_img.get_size()[0] / 2), cur.val.p[1] - int(new_img.get_size()[1] / 2)
             screen.blit(new_img, new_p)
             cur = cur.next
+
+
+def dist(p1, p2):
+    return (sum(np.square(np.subtract(np.array(p1), np.array(p2)))))**(1/2)
 
 
 if __name__ == '__main__':
